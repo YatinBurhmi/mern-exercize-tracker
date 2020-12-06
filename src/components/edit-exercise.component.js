@@ -1,13 +1,149 @@
-import React, { Component } from 'react';
-
+import React, { Component } from "react";
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css"
+import axios from 'axios';
 class EditExercises extends Component {
-    render() {
-        return (
+  constructor(props) {
+    super(props);
+
+    //whenever state is updated, DOM is rendered
+    this.state = {
+      username: "",
+      description: "",
+      duration: 0,
+      date: new Date(),
+      users: [],
+    };
+  }
+
+  // react lifecycle method
+  componentDidMount() {
+
+    //props.match.params.id getting the id directly from URL
+    axios.get('http://localhost:5000/exercises/'+this.props.match.params.id)
+        .then(response =>{
+            this.setState({
+                username: response.data.username,
+                description: response.data.description,
+                duration: response.data.duration,
+                date: new Date(response.data.date)
+            })
+        })
+
+    axios.get('http://localhost:5000/users/')
+        .then(response => {
+            if(response.data.length > 0){
+                this.setState({
+                    users: response.data.map(user => user.username),
+                    username: response.data[0].username,
+                  });   
+            }
+        })
+  }
+
+  // set username from text-box
+  onChangeUsername = (e) => {
+    this.setState({
+      username: e.target.value, // updates
+    });
+  };
+
+  onChangeDescription = (e) => {
+    this.setState({
+      description: e.target.value, // updates
+    });
+  };
+
+  onChangeDuration = (e) => {
+    this.setState({
+      duration: e.target.value, // updates
+    });
+  };
+
+  onChangeDate = (date) => {
+    this.setState({
+      date: date, // updates
+    });
+  };
+
+  onSubmit = (e) => {
+    e.preventDefault();
+
+    const exercise = {
+      username: this.state.username,
+      description: this.state.description,
+      duration: this.state.duration,
+      date: this.state.date,
+    };
+
+    console.log(exercise);
+
+    axios.post('http://localhost:5000/exercises/update/'+ this.props.match.params.id, exercise)
+        .then(res => console.log(res.data))
+
+    window.location = "/";
+  };
+
+  render() {
+    return (
+      <div>
+        <h3>Edit Exercise Log</h3>
+        <form onSubmit={this.onSubmit}>
+          <div className="form-group">
+          <label>Username: </label>
             <div>
-                <p>You are on Edit Exercises component!</p>
+              <select
+                ref="userInput"
+                required
+                className="form-control"
+                value={this.state.username}
+                onChange={this.onChangeUsername}
+              >
+                {this.state.users.map((user) => {
+                  return (
+                    <option key={user} value={user}>
+                      {user}
+                    </option>
+                  );
+                })}
+              </select>
             </div>
-        );
-    }
+            </div>
+            <div className="form-group">
+                <label>Description: </label>
+                <input type="text"
+                    required
+                    className="form-control"
+                    value={this.state.description}
+                    onChange={this.onChangeDescription}
+                    />
+            </div>
+            <div className="form-group">
+                <label>Duration (in minutes): </label>
+                <input
+                    type="text"
+                    className="form-control"
+                    value={this.state.duration}
+                    onChange={this.onChangeDuration}
+                    />
+            </div>
+            <div className="form-group">
+                <label>Date: </label>
+                <div>
+                    <DatePicker
+                    selected = {this.state.date}
+                    onChange={this.onChangeDate}
+                    />
+                </div>
+            </div>
+            
+            <div className="form-group">
+                <input type="submit" value="Edit Exercize Log" className= "btn btn-primary" />
+            </div>
+        </form>
+      </div>
+    );
+  }
 }
 
 export default EditExercises;

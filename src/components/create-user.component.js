@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-
+import axios from 'axios';
 class CreateUsers extends Component {
   constructor(props) {
     super(props);
@@ -26,6 +26,11 @@ class CreateUsers extends Component {
 
     console.log(user);
 
+    // sending http POST request to the backend endpoint
+    // user is a json object that API is expecting in the request body
+    
+    axios.post('http://localhost:5000/users/add', user)
+        .then(res => console.log(res.data));
     this.setState({
         username:'',
     })
